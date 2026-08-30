@@ -182,8 +182,66 @@ def  transmission_gate(
     pfet_ref.movey(nfet_ref.ymax + evaluate_bbox(pfet_ref)[1]/2 + pdk.util_max_metal_seperation())
     
     #Routing
-    top_level << c_route(pdk, nfet_ref.ports["multiplier_0_source_E"], pfet_ref.ports["multiplier_0_source_E"])
-    top_level << c_route(pdk, nfet_ref.ports["multiplier_0_drain_W"], pfet_ref.ports["multiplier_0_drain_W"], viaoffset=False)
+    # The inter-FET links short the two devices in PARALLEL: source<->source is VIN,
+    # drain<->drain is VOUT. Both are required -- the netlist declares both, and a
+    # consumer that taps VOUT at the pfet drain would leave the nfet drain floating
+    # (half the switch dead) if the drain link were dropped.
+    #
+    # Which shape those links take depends on the guard rings, hence tie_layers:
+    _mn, _mp = multipliers[0] - 1, multipliers[1] - 1
+    if tie_layers[0] != "met2":
+        # Single-layer rings (e.g. tie_layers=("met1","met1")): met2 crosses the ring
+        # N/S segments directly, so the link can stay on met2 with NO vias and no met3
+        # trunk. Shape is a same-layer "C": a stub off each port plus a vertical bar
+        # OFFSET past the rail ends -- on each flank the source AND drain rails end at
+        # the SAME x, so a flush bar would skewer the other net's rail end. (That
+        # clearance is the same thing c_route's `extension` buys on the met2-ring path.)
+        def _rect(x0, y0, x1, y1):
+            _r = top_level << rectangle(
+                size=(round(x1 - x0, 3), round(y1 - y0, 3)),
+                layer=pdk.get_glayer("met2"),
+                centered=True,
+            )
+            _r.movex((x0 + x1) / 2 - _r.center[0]).movey((y0 + y1) / 2 - _r.center[1])
+
+        def _cbar(p1, p2, east, name):
+            sgn = 1 if east else -1
+            ext, bw = 0.5, 0.4
+            x_edge = (max(sgn * p1.center[0], sgn * p2.center[0]) * sgn)  # outermost rail end
+            xb = sorted((x_edge + sgn * ext, x_edge + sgn * (ext + bw)))
+            ylo, yhi = 1e9, -1e9
+            for p in (p1, p2):
+                h = min(float(p.width), 0.7)
+                xs = sorted((p.center[0] - sgn * 0.2, x_edge + sgn * (ext + bw)))
+                _rect(xs[0], p.center[1] - h / 2, xs[1], p.center[1] + h / 2)
+                ylo = min(ylo, p.center[1] - h / 2)
+                yhi = max(yhi, p.center[1] + h / 2)
+            _rect(xb[0], ylo, xb[1], yhi)
+            # Port at the trunk centre: the natural place for a consumer to land this
+            # net (VIN=source, VOUT=drain) -- a met2 landing between the two FETs and
+            # off the per-FET rails, which are crowded by the multiplier c_routes.
+            top_level.add_port(
+                name=name,
+                center=((xb[0] + xb[1]) / 2, (ylo + yhi) / 2),
+                width=bw,
+                orientation=0 if east else 180,
+                layer=pdk.get_glayer("met2"),
+            )
+
+        # trailing "_x" is a placeholder segment: rename_ports_by_orientation replaces
+        # the LAST underscore-segment with the orientation letter, giving the public
+        # names "source_con_E" and "drain_con_W".
+        _cbar(nfet_ref.ports[f"multiplier_{_mn}_source_E"],
+              pfet_ref.ports[f"multiplier_{_mp}_source_E"], east=True, name="source_con_x")
+        _cbar(nfet_ref.ports[f"multiplier_{_mn}_drain_W"],
+              pfet_ref.ports[f"multiplier_{_mp}_drain_W"], east=False, name="drain_con_x")
+    else:
+        # met2-ring path: met3 trunks hop the rings. With stacked multipliers the
+        # per-FET gate trunk crowds the East inter-FET source trunk on met3
+        # (sky130 m3.2 / gf180 M3.2a), so push the source c-route further East.
+        src_extension = 1.0 if max(multipliers) > 1 else 0.5
+        top_level << c_route(pdk, nfet_ref.ports["multiplier_0_source_E"], pfet_ref.ports["multiplier_0_source_E"], extension=src_extension)
+        top_level << c_route(pdk, nfet_ref.ports["multiplier_0_drain_W"], pfet_ref.ports["multiplier_0_drain_W"], viaoffset=False)
     
     #Renaming Ports
     top_level.add_ports(nfet_ref.get_ports_list(), prefix="N_")
