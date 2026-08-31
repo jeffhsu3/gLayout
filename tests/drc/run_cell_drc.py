@@ -155,7 +155,6 @@ import re as _re
 _IGNORE_PATTERNS = [
     _re.compile(r"density", _re.IGNORECASE),
     _re.compile(r"min[._\s-]*\w*\s*area", _re.IGNORECASE),
-    _re.compile(r"^m\d+\.4$", _re.IGNORECASE),  # sky130 metal min-area rules: m1.4, m2.4, m3.4, m4.4
     # gf180 DF.14: max distance from a substrate tap (pcomp outside nwell)
     # to the nearest nfet (ncomp outside nwell). This is a chip-level
     # latch-up constraint; a pmos-only cell can't satisfy it in isolation.
@@ -163,9 +162,54 @@ _IGNORE_PATTERNS = [
 ]
 
 
-def _is_ignored_rule(name: str, desc: str) -> bool:
+# Wide-metal spacing rules whose KLayout implementation drops exemptions the
+# foundry's own sign-off deck has. sky130A.tech states them as:
+#
+#   widespacing allm4,m4fill 3005 allm4,obsm4 400 touching_ok \
+#       "Metal4 > 3um spacing to unrelated m4 < %d (met4.5b)"
+#
+# -- scoped to *unrelated* metal, with `touching_ok` exempting shapes that touch
+# the wide metal. Neither KLayout deck (glayout's, nor laurentc2/SKY130_for_KLayout)
+# carries either exemption, so both flag a single continuous net wherever it changes
+# width: `huge.separation(non_huge, 0.4)` measures ZERO across that boundary because
+# the two derived regions are the same metal.
+#
+# Those artifacts are identifiable by marker shape: a separation-across-a-touching-
+# boundary marker is degenerate (the two edges coincide, so the bbox has zero extent
+# in the measured axis), whereas a genuine gap between separate shapes yields a marker
+# whose bbox width IS the offending distance. Verified on a synthetic case:
+#   width transition   -> 0.000 x 1.800 um
+#   real 0.30um gap    -> 0.300 x 5.000 um
+#
+# CAVEAT: this is a proxy for `touching_ok`, not for "unrelated". Two *different* nets
+# abutting on the same layer would also produce a degenerate marker and be waived here
+# -- that case is a short, and LVS is what catches it.
+_TOUCHING_OK_RULES = {"m1.3b", "m2.3b", "m3.3ab", "m3.3d", "m4.5ab", "m4.5b"}
+
+
+def _marker_is_degenerate(item) -> bool:
+    """True if the item's marker has zero extent in x or y (edges coincide)."""
+    for sub in item:
+        if sub.tag.split("}")[-1] != "values":
+            continue
+        for val in sub:
+            nums_txt = _re.findall(r"-?\d+\.?\d*", (val.text or ""))
+            pts = [float(t) for t in nums_txt]
+            if len(pts) >= 4:
+                xs = pts[0::2]
+                ys = pts[1::2]
+                if max(xs) - min(xs) < 1e-9 or max(ys) - min(ys) < 1e-9:
+                    return True
+    return False
+
+
+def _is_ignored_rule(name: str, desc: str, item=None) -> bool:
     text = f"{name}  {desc}"
-    return any(p.search(text) for p in _IGNORE_PATTERNS)
+    if any(p.search(text) for p in _IGNORE_PATTERNS):
+        return True
+    if item is not None and name in _TOUCHING_OK_RULES:
+        return _marker_is_degenerate(item)
+    return False
 
 
 def _count_lyrdb_violations(report: Path) -> dict:
@@ -204,7 +248,7 @@ def _count_lyrdb_violations(report: Path) -> dict:
                     cat = (sub.text or "").strip().strip("'")
                     break
             desc = cats.get(cat, "")
-            if _is_ignored_rule(cat, desc):
+            if _is_ignored_rule(cat, desc, item):
                 ignored_by_rule[cat] = ignored_by_rule.get(cat, 0) + 1
             else:
                 by_rule[cat] = by_rule.get(cat, 0) + 1
