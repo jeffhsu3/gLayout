@@ -22,9 +22,9 @@ from glayout.cells.composite.opamp.row_csamplifier_diff_to_single_ended_converte
 
 
 @validate_arguments
-def __add_diff_pair_and_bias(pdk: MappedPDK, toplevel_stacked: Component, half_diffpair_params: tuple[float, float, int], diffpair_bias: tuple[float, float, int], rmult: int, with_antenna_diode_on_diffinputs: int) -> Component:
+def __add_diff_pair_and_bias(pdk: MappedPDK, toplevel_stacked: Component, half_diffpair_params: tuple[float, float, int], diffpair_bias: tuple[float, float, int], rmult: int, with_antenna_diode_on_diffinputs: int, diffpair_plus_minus_sep: float = 0) -> Component:
     clear_cache()
-    diffpair_i_ref = diff_pair_ibias(pdk, half_diffpair_params, diffpair_bias, rmult, with_antenna_diode_on_diffinputs)
+    diffpair_i_ref = diff_pair_ibias(pdk, half_diffpair_params, diffpair_bias, rmult, with_antenna_diode_on_diffinputs, diffpair_plus_minus_sep)
     toplevel_stacked.add(diffpair_i_ref)
     toplevel_stacked.add_ports(diffpair_i_ref.get_ports_list(),prefix="diffpair_")
 
@@ -153,12 +153,13 @@ def diff_pair_stackedcmirror(
     diffpair_bias: tuple[float, float, int],
     half_common_source_nbias: tuple[float, float, int, int],
     rmult: int,
-    with_antenna_diode_on_diffinputs: int
+    with_antenna_diode_on_diffinputs: int,
+    diffpair_plus_minus_sep: float = 0
 ) -> Component:
     # create toplevel_stacked component
     toplevel_stacked = Component()
     # place nmos components
-    diffpair_and_bias = __add_diff_pair_and_bias(pdk, toplevel_stacked, half_diffpair_params, diffpair_bias, rmult, with_antenna_diode_on_diffinputs)
+    diffpair_and_bias = __add_diff_pair_and_bias(pdk, toplevel_stacked, half_diffpair_params, diffpair_bias, rmult, with_antenna_diode_on_diffinputs, diffpair_plus_minus_sep)
     # create and position each half of the nmos bias transistor for the common source stage symetrically
     toplevel_stacked = __add_common_source_nbias_transistors(pdk, toplevel_stacked, half_common_source_nbias, rmult)
     toplevel_stacked.add_padding(layers=(pdk.get_glayer("pwell"),),default=0)

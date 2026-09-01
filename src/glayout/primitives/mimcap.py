@@ -319,6 +319,14 @@ def mimcap(
                 appendix_pos[cord_ref] = appendix_pos[cord_ref] + appendix_size[cord_ref]/2 if direction=="N" or direction=="E" else appendix_pos[cord_ref] - appendix_size[cord_ref]/2
                 appendix.move(appendix_pos)
     
+    # Expose the bottom plate itself. With `with_extension=True` the plate is
+    # reached through the `bot_via_*` ports above, but `mimcap_array` builds
+    # its units with extensions off -- and without these the bottom plate has
+    # no ports at all, so an array has no second terminal to route to.
+    mim_cap = add_ports_perimeter(
+        mim_cap, layer=pdk.get_glayer(capmetbottom), prefix="bottom_met_"
+    )
+
     # Add top metal ports (unchanged)
     mim_cap.add_ports(top_met_ref.get_ports_list())
 
@@ -370,6 +378,21 @@ def mimcap_array(pdk: MappedPDK, rows: int, columns: int, size: tuple[float,floa
                     pdk.get_grule("capmet")["min_separation"]) #+ evaluate_bbox(mimcap_single)[0]
 	array_ref = mimcap_arr << prec_array(mimcap_single, rows, columns, spacing=2*[mimcap_space])
 	mimcap_arr.add_ports(array_ref.get_ports_list())
+
+	# Stable array-level two-terminal interface. Every unit is wired in
+	# parallel below, so any edge unit's plate port speaks for the whole
+	# array; per-unit row/col ports stay available for callers that need one
+	# specific physical access point.
+	for level in ("bottom_met", "top_met"):
+		for orientation, port_name in (
+			("W", f"row0_col0_{level}_W"),
+			("E", f"row0_col{columns - 1}_{level}_E"),
+			("S", f"row0_col0_{level}_S"),
+			("N", f"row{rows - 1}_col0_{level}_N"),
+		):
+			mimcap_arr.add_port(
+				name=f"{level}_{orientation}", port=mimcap_arr.ports[port_name]
+			)
 	# create a list of ports that should be routed to connect the array
 	port_pairs = list()
 	for rownum in range(rows):

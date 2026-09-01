@@ -17,11 +17,20 @@ setup(
     package_dir={"": "src"},
     include_package_data=True,
     install_requires=[
+        # gdsfactory keeps its cap: 8.x renamed Component/Port surface that
+        # `glayout.backend._gdsfactory` passes straight through.
         "gdsfactory>6.0.0,<=7.7.0",
-        "numpy>1.21.0,<=1.24.0",
-        "pandas>1.3.0,<=2.3.0",
-        "matplotlib>3.4.0,<=3.10.0",
-        "klayout>0.28.0,<=0.29",
+        # The rest are floors, not ranges. The old upper bounds were inherited
+        # from OpenFASOC and had gone stale to the point of being unusable:
+        # numpy 1.24 ships no cp313 wheel and cannot build on Python >=3.12
+        # (distutils is gone), so `pip install glayout` failed outright on a
+        # current interpreter. Nothing here reaches for a removed API --
+        # gdsfactory 7.7.0 runs against numpy 2.x -- so pin only the floor and
+        # let the solver take the newest that works.
+        "numpy>=1.21.0",
+        "pandas>=1.3.0",
+        "matplotlib>=3.4.0",
+        "klayout>=0.28.1",
         # `docopt` is imported by gf180mcu's bundled `run_lvs.py` (under
         # `$PDK_ROOT/ciel/gf180mcu/versions/<hash>/gf180mcuD/libs.tech/
         # klayout/tech/lvs/run_lvs.py`). The gf180 LVS dispatch in

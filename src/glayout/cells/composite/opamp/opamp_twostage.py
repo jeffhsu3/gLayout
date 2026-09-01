@@ -205,7 +205,8 @@ def opamp_twostage(
     mim_cap_size=(12, 12),
     mim_cap_rows=3,
     rmult: int = 2,
-    with_antenna_diode_on_diffinputs: int=5
+    with_antenna_diode_on_diffinputs: int=5,
+    diffpair_plus_minus_sep: float = 0
 ) -> Component:
     """
     create a two stage opamp, args->
@@ -226,7 +227,7 @@ def opamp_twostage(
         raise ValueError("number of antenna diodes should be at least 2 (or 0 to specify no diodes)")
     if half_common_source_bias[3] < 2:
         raise ValueError("half_common_source_bias num multiplier must be >= 2")
-    opamp_top, halfmultn_drain_routeref, halfmultn_gate_routeref, _cref = diff_pair_stackedcmirror(pdk, half_diffpair_params, diffpair_bias, half_common_source_bias, rmult, with_antenna_diode_on_diffinputs)
+    opamp_top, halfmultn_drain_routeref, halfmultn_gate_routeref, _cref = diff_pair_stackedcmirror(pdk, half_diffpair_params, diffpair_bias, half_common_source_bias, rmult, with_antenna_diode_on_diffinputs, diffpair_plus_minus_sep)
 
     opamp_top.info['netlist'].circuit_name = "INPUT_STAGE"
 

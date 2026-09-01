@@ -1,3 +1,5 @@
+import os
+
 from glayout.backend import Component, ComponentReference, cell, clear_cache, copy, rectangle, route_quad
 from glayout.pdk.mappedpdk import MappedPDK
 from typing import Optional, Union
@@ -310,7 +312,8 @@ def opamp(
     mim_cap_rows=3,
     rmult: int = 2,
     with_antenna_diode_on_diffinputs: int=5, 
-    add_output_stage: Optional[bool] = False
+    add_output_stage: Optional[bool] = False,
+    diffpair_plus_minus_sep: float = 0
 ) -> Component:
     """
     create a two stage opamp with an output buffer, args->
@@ -338,7 +341,8 @@ def opamp(
         mim_cap_size,
         mim_cap_rows,
         rmult,
-        with_antenna_diode_on_diffinputs
+        with_antenna_diode_on_diffinputs,
+        diffpair_plus_minus_sep
     )
     # add output amplfier stage
     if add_output_stage:
@@ -358,8 +362,20 @@ def opamp(
         # the right metal.
         ["VP", "VN", "VDD1", "VDD2", "IBIAS", "VSS", "B"],
     )
-    # add LVS pin/label rects so netgen can name-match the top-level signals
-    opamp_top = add_opamp_labels(opamp_top, pdk, add_output_stage=add_output_stage)
+    # add LVS pin/label rects so netgen can name-match the top-level signals.
+    # Gated the same way the elementary cells gate theirs (transmission_gate,
+    # current_mirror, FVF), so a composite that WRAPS the opamp and renames
+    # its pins can turn them off -- at that level the names are wrong.
+    # comparator is such a wrapper (VP/VN -> VIN_P/VIN_N, CS_BIAS/
+    # DIFFPAIR_BIAS -> IBIAS1/IBIAS2) and deliberately does NOT set this.
+    # Measured on the sky130 ZCD sizing, suppressing them changes nothing:
+    # netgen reports 16/16 devices, 13 layout nets against 11, and a failed
+    # pin match either way.  So the collision these labels cause is not the
+    # cause of that mismatch, and turning them off buys nothing -- the switch
+    # is here for experiments, not as a fix.  Note these rects land on the
+    # *_pin layers, which magic reads as metal, so they are not inert.
+    if not os.environ.get("GLAYOUT_NO_PIN_LABELS"):
+        opamp_top = add_opamp_labels(opamp_top, pdk, add_output_stage=add_output_stage)
     return rename_ports_by_orientation(component_snap_to_grid(opamp_top))
 
 

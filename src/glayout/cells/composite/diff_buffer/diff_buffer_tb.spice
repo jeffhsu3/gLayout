@@ -1,0 +1,20 @@
+* diff_buffer functional test: drive differential, check VOUTP/VOUTN follow + CM
+.include "/home/jeff/iv4/repos/OpenFASOC/openfasoc/generators/glayout/glayout/flow/blocks/composite/diff_buffer/diff_buffer.spice"
+.include "/home/jeff/iv4/repos/gf180mcu-project-template/gf180mcu/gf180mcuD/libs.tech/ngspice/design.ngspice"
+.lib "/home/jeff/iv4/repos/gf180mcu-project-template/gf180mcu/gf180mcuD/libs.tech/ngspice/sm141064.ngspice" typical
+.lib "/home/jeff/iv4/repos/gf180mcu-project-template/gf180mcu/gf180mcuD/libs.tech/ngspice/sm141064.ngspice" mimcap_typical
+Vdd VDD 0 3.3
+* shared bias: 2 diode refs tied -> inject 2x (10u) for ~5u/opamp
+Ibdp VDD VDP_BIAS 10u
+Ibcs VDD VCS_BIAS 10u
+Vinp VINP 0 1.75
+Vinn VINN 0 1.55
+CLp VOUTP 0 150f
+CLn VOUTN 0 150f
+XB VINP VINN VOUTP VOUTN VDP_BIAS VCS_BIAS VDD 0 diff_buffer
+.control
+op
+let isup = -i(Vdd)
+print v(VOUTP) v(VOUTN) v(VINP) v(VINN) isup
+.endc
+.end

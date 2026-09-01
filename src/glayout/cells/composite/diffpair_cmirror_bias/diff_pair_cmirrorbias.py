@@ -80,6 +80,7 @@ def diff_pair_ibias(
     diffpair_bias: tuple[float, float, int],
     rmult: int = 1,
     with_antenna_diode_on_diffinputs: int = 0,
+    diffpair_plus_minus_sep: float = 0,
 ) -> Component:
     # create and center diffpair
     diffpair_i_ = Component("temp diffpair and current source")
@@ -97,6 +98,7 @@ def diff_pair_ibias(
         rmult=rmult,
         dum_net='B',
         with_pin_labels=False,
+        plus_minus_seperation=diffpair_plus_minus_sep,
     )
     # add antenna diodes if that option was specified
     diffpair_centered_ref = prec_ref_center(center_diffpair_comp)
