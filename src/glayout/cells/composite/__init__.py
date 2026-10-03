@@ -9,3 +9,4 @@ from .flash_adc import flash_adc, flash_adc_netlist
 from .leaky_integrator import leaky_integrator, leaky_integrator_netlist
 from .diff_buffer import diff_buffer, units_fix
 from .cascode_ota import cascode_ota
+from .bandgap import bandgap, bandgap_netlist
