@@ -36,6 +36,7 @@ from .primitives.fet import nmos, pmos, multiplier
 from .primitives.guardring import tapring
 from .primitives.mimcap import mimcap, mimcap_array
 from .primitives.resistor import resistor
+from .primitives.vpp import sky130_vpp_cap_0p4
 
 # SPICE and utils
 from .spice import Netlist
@@ -77,6 +78,7 @@ __all__ = [
     "Netlist",
     "mimcap",
     "mimcap_array",
+    "sky130_vpp_cap_0p4",
     "resistor",
     "evaluate_bbox",
     "center_to_edge_distance",

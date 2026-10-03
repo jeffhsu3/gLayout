@@ -7,6 +7,7 @@ from .fet import nmos, pmos, multiplier, fet_netlist
 from .guardring import tapring
 from .mimcap import mimcap, mimcap_array
 from .resistor import resistor
+from .vpp import sky130_vpp_cap_0p4
 
 __all__ = [
     'via_stack',
@@ -18,5 +19,6 @@ __all__ = [
     'tapring',
     'mimcap',
     'mimcap_array',
-    'resistor'
-] 
+    'resistor',
+    'sky130_vpp_cap_0p4'
+]
