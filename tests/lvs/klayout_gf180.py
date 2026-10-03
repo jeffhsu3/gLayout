@@ -46,16 +46,22 @@ def _resolve_deck_dir(pdk_root: str) -> Path:
 
     Reads `$PDK_ROOT/ciel/gf180mcu/current` to pick the version hash, then
     points at the variant-D (5LM, 11K top metal) klayout LVS folder.
+    Falls back to a volare-style checkout (`$PDK_ROOT/gf180mcuD/...`)
+    when the ciel pointer is absent.
     """
     pointer = Path(pdk_root) / "ciel" / "gf180mcu" / "current"
-    if not pointer.is_file():
-        raise FileNotFoundError(f"missing gf180mcu version pointer at {pointer}")
-    version = pointer.read_text().strip()
-    deck = (
-        Path(pdk_root)
-        / "ciel" / "gf180mcu" / "versions" / version
-        / "gf180mcuD" / "libs.tech" / "klayout" / "tech" / "lvs"
-    )
+    if pointer.is_file():
+        version = pointer.read_text().strip()
+        deck = (
+            Path(pdk_root)
+            / "ciel" / "gf180mcu" / "versions" / version
+            / "gf180mcuD" / "libs.tech" / "klayout" / "tech" / "lvs"
+        )
+    else:
+        deck = (
+            Path(pdk_root)
+            / "gf180mcuD" / "libs.tech" / "klayout" / "tech" / "lvs"
+        )
     if not (deck / "run_lvs.py").is_file():
         raise FileNotFoundError(f"missing run_lvs.py under {deck}")
     return deck
