@@ -368,4 +368,8 @@ grulesobj["capmet"]["via3"] = {}
 grulesobj["capmet"]["met4"] = {}
 grulesobj["capmet"]["via4"] = {}
 grulesobj["capmet"]["met5"] = {}
-grulesobj["capmet"]["capmet"] = {"capmettop": (71, 20), "capmetbottom": (70, 20), "min_separation": 1.2}
+# capmettop/capmetbottom are the GDS layers of the MIM plate metals THIS mapping
+# builds with (mimcap.py option B: glayout met5/met4 = Metal5/Metal4). The real
+# SG13G2 MIM module sits between Metal5 and TopMetal1, but TopMetal1 is not a
+# glayout generic layer, so the cap is drawn one level down.
+grulesobj["capmet"]["capmet"] = {"capmettop": (67, 0), "capmetbottom": (50, 0), "min_separation": 1.2}
