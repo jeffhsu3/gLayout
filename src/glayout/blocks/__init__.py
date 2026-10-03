@@ -20,6 +20,8 @@ from glayout.cells import (
     sky130_add_fvf_labels,
     tg_netlist,
     transmission_gate,
+    vt_ref,
+    vt_ref_netlist,
 )
 
 # Alias the old package paths so nested imports keep working after the move to
@@ -41,4 +43,6 @@ __all__ = [
     "sky130_add_fvf_labels",
     "tg_netlist",
     "transmission_gate",
+    "vt_ref",
+    "vt_ref_netlist",
 ]

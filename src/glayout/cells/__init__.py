@@ -17,6 +17,8 @@ from glayout.cells.elementary import (
     sky130_add_fvf_labels,
     tg_netlist,
     transmission_gate,
+    vt_ref,
+    vt_ref_netlist,
 )
 
 # Preserve the old export name for callers that used ``add_fvf_labels``.
@@ -37,4 +39,6 @@ __all__ = [
     "sky130_add_fvf_labels",
     "tg_netlist",
     "transmission_gate",
+    "vt_ref",
+    "vt_ref_netlist",
 ]
