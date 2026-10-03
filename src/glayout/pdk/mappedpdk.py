@@ -247,6 +247,13 @@ class MappedPDK(Pdk):
         "active_diff",
         "active_tap",
         "poly",
+        # Optional device-flavour/process marker layers.  They are generic
+        # names so cells can request the physical distinction between a
+        # standard, thick-oxide, and native-threshold device without embedding
+        # a PDK layer number in the generator.
+        "hvi",
+        "hvntm",
+        "lvtn",
         "mcon",
         "met1",
         "via1",

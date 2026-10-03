@@ -30,6 +30,12 @@ LAYER = {
     "nwell": (64, 20),
     "pwell": (64, 44),
     "dnwell": (64, 18),
+    # Device-flavour/process markers used by the SKY130 5 V native and I/O
+    # NFETs.  HVI selects the thick gate oxide, HVNTM is the high-voltage
+    # n-tip implant, and LVTN distinguishes the native (near-zero-Vt) device.
+    "hvi": (75, 20),
+    "hvntm": (125, 20),
+    "lvtn": (125, 44),
     ## _pin layer definations 
     # (Text type Pin definiaitons are not needed)
     #"met5_pin": (72, 16), # (Text and data) Not Needed
@@ -83,6 +89,9 @@ sky130_glayer_mapping = {
     "nwell": "nwell",
     "pwell": (64,44), # This Layer defination donot exist in the PDK manual, See Pwell label (See Pull https://github.com/idea-fasoc/OpenFASOC/pull/366/)
     "dnwell": "dnwell",
+    "hvi": "hvi",
+    "hvntm": "hvntm",
+    "lvtn": "lvtn",
     # _pin layer ampping
     "met5_pin": "met4_pin",
     "met4_pin": "met3_pin",

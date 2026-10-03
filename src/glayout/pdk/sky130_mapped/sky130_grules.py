@@ -369,3 +369,34 @@ grulesobj["capmet"]["met4"] = {}
 grulesobj["capmet"]["via4"] = {}
 grulesobj["capmet"]["met5"] = {}
 grulesobj["capmet"]["capmet"] = {"capmettop": (71, 20), "capmetbottom": (70, 20), "min_separation": 1.2}
+
+# SKY130 device-flavour/process markers.  These values come from the bundled
+# SKY130 DRC deck (hvi.*, hvntm.*, and lvtn.* rules).
+grulesobj["hvi"]["hvi"] = {"min_width": 0.6, "min_separation": 0.7}
+grulesobj["hvi"]["active_diff"] = {
+    "min_enclosure": 0.18,
+    "min_separation": 0.18,
+}
+grulesobj["hvi"]["active_tap"] = {
+    "min_enclosure": 0.18,
+    "min_separation": 0.18,
+}
+grulesobj["hvi"]["poly"] = {"min_enclosure": 0.18}
+
+grulesobj["hvntm"]["hvntm"] = {"min_width": 0.7, "min_separation": 0.7}
+grulesobj["hvntm"]["active_diff"] = {
+    "min_enclosure": 0.185,
+    "min_separation": 0.185,
+}
+grulesobj["hvntm"]["active_tap"] = {"min_separation": 0.185}
+
+grulesobj["lvtn"]["lvtn"] = {
+    "min_width": 0.38,
+    "min_separation": 0.38,
+    "min_area": 0.265,
+}
+grulesobj["lvtn"]["active_diff"] = {"min_enclosure": 0.18}
+grulesobj["lvtn"]["poly"] = {
+    "min_enclosure": 0.18,
+    "min_separation": 0.18,
+}
