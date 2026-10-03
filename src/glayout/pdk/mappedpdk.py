@@ -382,7 +382,16 @@ class MappedPDK(Pdk):
                 "-b",                      # batch mode
                 "-r",  str(self.pdk_files['klayout_drc_file']),  # DRC runset (relies on implicit default layout)
                 "-rd", f"report_file={str(report_path)}",  # variable the runset reads for report(...)
-                "-rd", f"in_gds={str(layout_path)}"
+                "-rd", f"in_gds={str(layout_path)}",
+                # ...and the pre-0.29 names as well.  in_gds/report_file are
+                # what the gf180 deck reads;  the sky130 deck here still reads
+                # $input/$report, so on a newer klayout it was handed neither
+                # and died with "no cell name specified - either the source
+                # was not specified before 'report' or there is no default
+                # source".  -rd only defines a variable, so a deck that reads
+                # one pair simply ignores the other.
+                "-rd", "input=" + str(layout_path),
+                "-rd", "report=" + str(report_path),
             ]
         else:
             raise RuntimeError("klayout version not recognised!")
@@ -1135,4 +1144,3 @@ exit
             snapped_dims = [float(snapped_dim) for snapped_dim in snapped_dims]
         # correctly return list or single element
         return snapped_dims[0] if len(snapped_dims)==1 else snapped_dims
-
