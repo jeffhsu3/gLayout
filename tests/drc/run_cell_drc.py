@@ -53,6 +53,7 @@ _CELL_BUILDERS: Dict[str, str] = {
     "diff_pair_ibias":                        "glayout.cells.composite:diff_pair_ibias",
     "low_voltage_cmirror":                    "glayout.cells.composite:low_voltage_cmirror",
     "opamp":                                  "glayout.cells.composite:opamp",
+    "bandgap":                                "glayout.cells.composite:bandgap",
     # Narrow primitives: the diffusion under a contact cannot shrink with the
     # channel (CO.4 in gf180), so these exercise the dogbone path in fet.py.
     "nmos_narrow":                            "glayout.primitives.fet:nmos",
@@ -62,6 +63,7 @@ _CELL_BUILDERS: Dict[str, str] = {
     # here a change to `inter_finger_topmet` breaks them silently.
     "two_transistor_interdigitized":          "glayout.placement:two_transistor_interdigitized",
     "common_centroid_ab_ba":                  "glayout.placement:common_centroid_ab_ba",
+    "sample_hold_cell":                       "glayout.cells.composite.sample_and_hold.sample_hold_cell:sample_hold_cell",
 }
 
 

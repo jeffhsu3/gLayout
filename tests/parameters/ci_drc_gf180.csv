@@ -12,3 +12,5 @@ nmos_narrow,"{""width"": 0.22, ""length"": 0.28}"
 pmos_narrow,"{""width"": 0.22, ""length"": 0.28}"
 two_transistor_interdigitized,"{""device"": ""nfet"", ""numcols"": 2}"
 common_centroid_ab_ba,"{""width"": 3, ""fingers"": 4, ""n_or_p_fet"": true}"
+sample_hold_cell,{}
+bandgap,{}
