@@ -107,7 +107,12 @@ XB VDD2 VG2 VSS2 VB {model} l={length} w={width} m={mtop}"""
         source_netlist += f"\nXDUMMY {dum_node} {dum_node} {dum_node} VB {model} l={length} w={width} m={2}"
     source_netlist += "\n.ends {circuit_name}"
 
-    instance_format = "X{name} {nodes} {circuit_name} l={length} w={width} m={{1}}"
+    # No parameters on the instance line: the .subckt above declares none
+    # (they were dropped so klayout would stop folding them into the circuit
+    # name), and its body inlines l/w/m.  Passing them anyway made ngspice
+    # reject the netlist outright, and `m={{1}}` was emitted literally as
+    # `m={1}` besides -- an unsubstituted placeholder, not a value.
+    instance_format = "X{name} {nodes} {circuit_name}"
 
     return Netlist(
         circuit_name='two_trans_interdigitized',

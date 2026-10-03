@@ -219,7 +219,13 @@ XDUMMY8   VSS VSS VSS VSS {{model}} l={half_pload[1]} w={half_pload[0]}
 XDUMMY9   VSS VSS VSS VSS {{model}} l={half_pload[1]} w={half_pload[0]}
 XDUMMY10  VSS VSS VSS VSS {{model}} l={half_pload[1]} w={half_pload[0]}
 .ends {{circuit_name}}""",
-        instance_format="X{name} {nodes} {circuit_name} l={length} w={width} mt={mult_top} mb={mult_bot}",
+        # No parameters on the instance line either.  Dropping them from the
+        # .subckt above (see the note there) without dropping them here left
+        # every instance passing l/w/mt/mb to a subcircuit that declares none,
+        # which ngspice rejects outright -- "Error in netlist line ..., fatal
+        # error, exit(1)" before a single .measure runs.  Nothing is lost:
+        # the body inlines all four values.
+        instance_format="X{name} {nodes} {circuit_name}",
         parameters={
             'model': pdk.models['pfet'],
             'width': half_pload[0],
